@@ -19,14 +19,13 @@ const insertMusica = async function (dadosMusica) {
 
     try {
 
-        if (dadosFilme.data_relancamento != '' &&
-            dadosFilme.data_relancamento != null &&
-            dadosFilme.data_relancamento != undefined) {
+        if (dadosMusica.album != '' &&
+            dadosMusica.album != null &&
+            dadosMusica.album != undefined) {
 
             sql = `insert into tbl_musica (titulo, artista, album, data_lancamento, foto_capa) values (
                                        '${dadosMusica.titulo}',
                                        '${dadosMusica.artista}',
-                                       '${dadosMusica.album}',
                                        '${dadosMusica.data_lancamento}',
                                        '${dadosMusica.foto_capa}'
                                        )`;
@@ -51,13 +50,13 @@ const insertMusica = async function (dadosMusica) {
 }
 
 // Função para UPDATE
-const updateMusica = async function (dadosMusica, id) {
+const updateMusica = async function (id, dadosMusica) {
 
-    let sql = `update tbl_musica set titulo = '${dadosAtualizados.titulo}',
-                                     artista = '${dadosAtualizados.artista}',
-                                     album = '${dadosAtualizados.album}',
-                                     data_lancamento = '${dadosAtualizados.data_lancamento}',
-                                     foto_capa = '${dadosAtualizados.foto_capa}'
+    let sql = `update tbl_musica set titulo = '${dadosMusica.titulo}',
+                                     artista = '${dadosMusica.artista}',
+                                     album = '${dadosMusica.album}',
+                                     data_lancamento = '${dadosMusica.data_lancamento}',
+                                     foto_capa = '${dadosMusica.foto_capa}'
                                      where id = ${id}`
 
     let rsMusica = await prisma.$queryRawUnsafe(sql);
@@ -67,6 +66,7 @@ const updateMusica = async function (dadosMusica, id) {
     else
         return false;
 }
+
 
 // Função para DELETE
 const deleteMusica = async function (id) {
@@ -85,8 +85,7 @@ const deleteMusica = async function (id) {
 // Função SELECT todas as músicas
 const selectAllMusicas = async function () {
 
-    let sql = `select tbl_musica.titulo as titulo, tbl_musica.artista as artista, tbl_musica.album as album,
-               tbl_musica.data_lancamento as data_lancamento, tbl_musica.foto_capa as foto_capa`
+    let sql = `select * from tbl_musica;`
 
     //$queryRawUnsafe()
     //$queryRaw('select * from tbl_filme where nome = '+ variavel)
@@ -100,34 +99,33 @@ const selectAllMusicas = async function () {
 
 }
 
-// Função SELECT pelo nome da música
-const selectByNomeMusica = async function (titulo) {
+// Função SELECT pelo nome ID
+const selectByIdMusica = async function(id) {
 
-    let tituloMusica = titulo.replaceAll('"', '');
-
-    try {
-
-        // busca uma música pelo nome
-        let sql = `select * from tbl_musica where titulo like "${nomeTitulo}%"`
-
-        // encaminha o script sql para o banco de dados
-        let rsMusica = await prisma.$queryRawUnsafe(sql)
-
-        return rsMusica;
-
-    } catch (error) {
-        console.log(error)
-        return false
+    try{
+    let sql = `select * from tbl_musica where id = ${id}`
+  
+    //caminha o script sql para o banco de dados
+    let rsMusica = await prisma.$queryRawUnsafe(sql)
+  
+    if(rsMusica.length > 0)
+      return rsMusica;
+    else
+      return rsMusica;
+      
+    } catch (error){
+      return false
     }
-
-}
+  
+   
+  }
 
 module.exports ={
     insertMusica,
     updateMusica,
     deleteMusica,
     selectAllMusicas,
-    selectByNomeMusica
+    selectByIdMusica
 }
 
 // 200 SUCESSO

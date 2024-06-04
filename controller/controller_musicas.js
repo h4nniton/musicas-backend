@@ -26,9 +26,9 @@ const setInserirNovaMusica = async function (dadosMusica, contentType) {
             if (dadosMusica.titulo == '' || dadosMusica.titulo == undefined || dadosMusica.titulo == null || dadosMusica.titulo.length > 100 ||
                 dadosMusica.artista == '' || dadosMusica.artista == undefined || dadosMusica.artista == null || dadosMusica.artista.length > 100 ||
                 dadosMusica.data_lancamento == '' || dadosMusica.data_lancamento == undefined || dadosMusica.data_lancamento == null || dadosMusica.data_lancamento.length != 10 ||
-                dadosFilme.foto_capa == '' || dadosFilme.foto_capa == undefined || dadosFilme.foto_capa == null || dadosFilme.foto_capa.length > 200 
+                dadosMusica.foto_capa == '' || dadosMusica.foto_capa == undefined || dadosMusica.foto_capa == null || dadosMusica.foto_capa.length > 200 
             ) {
-
+                console.log(message)
                 return message.ERROR_REQUIRED_FIELDS //400
 
             } else {
@@ -40,6 +40,7 @@ const setInserirNovaMusica = async function (dadosMusica, contentType) {
 
                     //validação para ver se a data está com a qtde de digitoss correta
                     if (dadosMusica.album.length != 100) {
+                    
                         return message.ERROR_REQUIRED_FIELDS //400
                     } else {
                         validateStatus = true
@@ -51,7 +52,7 @@ const setInserirNovaMusica = async function (dadosMusica, contentType) {
                 //validaçao para verificar se a variável booleana é verdadeira
                 if (validateStatus) {
 
-                    //encaminha os dados do filme para o DAO inserir no banco de dados
+                    //encaminha os dados do Musica para o DAO inserir no banco de dados
                     let novaMusica = await musicasDAO.insertMusica(dadosMusica)
                     let idNovaMusica = await musicasDAO.selectLastInsertId()
 
@@ -76,37 +77,41 @@ const setInserirNovaMusica = async function (dadosMusica, contentType) {
             return message.ERROR_CONTENT_TYPE //415
         }
     } catch (error) {
+
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER //500 - erro na controller
     }
 }
 
 //função para atualizar uma musica
-const setAtualizarMusica = async function (dadosAtualizados, id) {
+const setAtualizarMusica = async function (id, dadosAtualizados, contentType) {
 
     try {
         if(id == '' || id == undefined || isNaN(id)){
             return message.ERROR_INVALID_ID //400
+            
         }else{
             if(dadosAtualizados == '' || dadosAtualizados == undefined ||
                dadosAtualizados.titulo == '' || dadosAtualizados.titulo == undefined || dadosAtualizados.titulo == null || dadosAtualizados.titulo.length > 100 ||
                dadosAtualizados.artista == '' || dadosAtualizados.artista == undefined || dadosAtualizados.artiista == null || dadosAtualizados.artista.length > 100 ||
-               dadosAtualizados.album == '' || dadosAtualizados.album == undefined || dadosAtualizados.album == null || dadosAtualizados.album.length > 100 ||
                dadosAtualizados.data_lancamento == '' || dadosAtualizados.data_lancamento == undefined || dadosAtualizados.data_lancamento == null || dadosAtualizados.data_lancamento.length != 10 ||
                dadosAtualizados.foto_capa == '' || dadosAtualizados.foto_capa == undefined || dadosAtualizados.foto_capa == null || dadosAtualizados.foto_capa.length > 200
             ){
                 return message.ERROR_REQUIRED_FIELDS 
             }else{
-                let dadosAtualizado = await musicasDAO.updateFilme(id, dadosAtualizados)
+                let dadosAtualizado = await musicasDAO.updateMusica(id, dadosAtualizados)
 
-                if(dadosAtualizado){
-                    return message.SUCCESS_UPDATED_ITEM //201
-            }else{
-                return message.ERROR_INTERNAL_SERVER_DB //500
-            }
+
+                if (dadosAtualizado){
+                    return message.SUCCESS_UPDATED_ITEM 
+                }else{
+                    return message.ERROR_INTERNAL_SERVR_BD
+                }
         }
 
 }
  } catch (error) {
+    console.log(error)
     return message.ERROR_INTERNAL_SERVER
 }
 }
@@ -139,8 +144,8 @@ const getListarMusicas = async function () {
     //cria um objeto JSON
     let musicasJSON = {};
 
-    //chama a função do DAO que retorna os filmes do BD
-    let dadosMusica = await musicasDAO.selectAllMusicas() //-> pede pro DAO trazer todos os filmes do banco
+    //chama a função do DAO que retorna os Musicas do BD
+    let dadosMusica = await musicasDAO.selectAllMusicas() //-> pede pro DAO trazer todos as muaias do banco
 
     //validação para verificar se o DAO retonou dados
     if (dadosMusica) {
@@ -156,39 +161,37 @@ const getListarMusicas = async function () {
     }
 }
 
-//função para buscar uma musica pelo nome ?
-const getBuscarMusicaNome = async function (titulo) {
+//função para buscar uma musica pelo nome ? 
+const getBuscarMusicaId = async function (id) {
 
-    //recebe o id do filme 
-    let tituloMusica = nome;
+    //recebe o id do Musica 
+    let idMusica = id;
 
     //cria o objeto JSON
-    let musicasJSON = {};
+    let musicaJSON = {};
 
     //validação para verificar se o id é válido (vazio, inefiido e não numérico)
-    if (tituloMusica == '' || tituloMusica == undefined) {
+    if (idMusica == '' || idMusica == undefined || isNaN(idMusica)) {
         return message.ERROR_INVALID_ID //400
     } else {
 
-        //encaminha para o DAO localizar o id da musica
-        let dadosMusica = await musicasDAO.selectByNomeMusica(tituloMusica)
- 
+        //encaminha para o DAO localizar o id do Musica
+        let dadosMusica = await musicasDAO.selectByIdMusica(idMusica)
+
         //validação para verificar se existe dados de retorno
         if (dadosMusica) {
 
             //validação para verificar a quantidade de itens encontrado
             if (dadosMusica.length > 0) {
                 //cria o JSON de return
-                musicasJSON.musica = dadosMusica;
-                musicasJSON.status_code = 200
-                return musicasJSON
+                musicaJSON.musica = dadosMusica;
+                musicaJSON.status_code = 200
+                return musicaJSON
             } else {
-                console.log(dadosMusica)
                 return message.ERROR_NOT_FOUND //404
             }
 
         } else {
-            console.log(dadosMusica)
             return message.ERROR_INTERNAL_SERVER_DB //500
         }
     }
@@ -204,6 +207,6 @@ module.exports = {
     setAtualizarMusica,
     setExcluirMusica,
     getListarMusicas,
-    getBuscarMusicaNome
+    getBuscarMusicaId
 }
     

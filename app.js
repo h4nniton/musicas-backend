@@ -1,6 +1,6 @@
 /*******************************************************************************************
  * Objetivo: Arquivo para realizar as requisições das músicas
- * Data: 39/05/2024
+ * Data: 29/05/2024
  * Autor: Emily Crepaldi
  * Versão: 1.0
 ***********************************************************************************************/
@@ -46,20 +46,6 @@ const controllerMusicas = require('./controller/controller_musicas.js');
 // *************************************************************************
 /******************************** MÚSICAS ***********************************/
 
-// EndPoints:  Retorna os dados do arvquivo JSON
-app.get('/v1/backmusicas/musicas', cors(), async function(request, response, next){
-
-    let controllerMusicas = require('./controller/funcoes.js');
-
-    let musicas = controllerMusicas.getMusicas();
-    if (musicas){
-        response.json(musicas);
-        response.status(200);
-    }else{
-        response.status(404);
-    }
-});
-
 //EndPoints:  Retorna os dados do Banco de Dados
 app.get('/v2/backmusicas/musicas', cors(), async function(request, response, next){
 
@@ -76,21 +62,21 @@ if (dadosMusicas) {
     }
 });
 
-// EndPoint : Retorna as músicas por filtro
-app.get('/v2/backmusicas/filtro/musicas', cors(), async function(request, response, next){
+// EndPoint : Retorna o filme filtrando pelo ID
+app.get('/v2/backmusicas/musica/:id', cors(), async function(request, response,next){
 
-    // let sql = `select * from tbl_musica where id = ${id}`;
+    // Recebe o ID encaminhado na requisição
+    let idMusica = request.params.id;
 
-    let filtroMusica = filtroMusica.getFiltrarMusica;
+    // Solicita a musica para controller filtrando pelo ID
+    let dadosMusica = await controllerMusicas.getBuscarMusicaId(idMusica);
 
-    response.status(filtroMusica.status_code)
-    response.json(filtroMusica)
+    // Retorna status_Code e JSON com dados ou mensagem de erro
+    response.status(dadosMusica.status_code);
+    response.json(dadosMusica);
+});
 
-    // let filtroMusica = await prisma.$queryRawUnsafe(sql);
-
-    // return filtroMusica;
-})
-
+// EndPoint: inserir novos dados
 app.post('/v2/backmusicas/musicas', cors(), bodyParserJSON, async function(request, response, next){
 
     let contentType = request.headers['content-type'];
@@ -106,3 +92,30 @@ app.post('/v2/backmusicas/musicas', cors(), bodyParserJSON, async function(reque
     response.status(resultDados.status_code);
     response.json(resultDados);
 });
+
+// EndPoint: Atualizar dados novos
+app.put('/v2/backmusicas/musica/:id', cors(), bodyParserJSON, async function(request, response){
+
+    let idMusica = request.params.id
+    let contentType = request.header('content-type')
+    let dadosBody = request.body
+    let musicaAtualizada = await controllerMusicas.setAtualizarMusica(idMusica, contentType, dadosBody)
+
+    response.json(musicaAtualizada)
+    response.status(musicaAtualizada.status_code)
+})
+
+// EndPoints: Deletar dados
+app.delete('/v2/backmusicas/musica/:id', cors(), bodyParserJSON, async function(request, response){
+
+    let idMusica = request.params.id
+    let musicaDeletada = await controllerMusicas.setExcluirMusica(idMusica)
+
+    response.json(musicaDeletada)
+    response.status(musicaDeletada.status_code)
+})
+
+//******************************************************************************************/
+app.listen('8080', function(){
+    console.log('API funcionando veyyyyyyr!!!')
+})
